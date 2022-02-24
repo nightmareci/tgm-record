@@ -7,18 +7,18 @@ MAME root directory: $mameroot" 1>&2
 fi
 game="$1"
 shift
-launcher="`which tgm-launcher`"
+launcher="`which tgm-launcher 2>/dev/null`"
 [ -f "${launcher:="`dirname "$0"`/tgm-launcher"}" ] \
     || launcher="`dirname "\`readlink -f "$0"\`"`/tgm-launcher"
 [ ! -f "$launcher" ] && echo 'Unable to find tgm-launcher helper script.' 1>&2 \
     || . "$launcher"
 
-nv="$mameroot/nvram/$game.nv"
+nv="$mameroot/nvram/$game"
 inp="$mameroot/inp/$game"
 meta="$mameroot/meta.$game"
 name="`date '+%Y%m%d.%H%M'`"
 [ -d "$meta" ] || mkdir "$meta" || echo 'Unable to create metadata directory. Record length will not be saved.'
-cp "$nv" "$nv.$name"
+cp -r "$nv" "$nv.$name"
 echo "Recording $name..."
 seconds="`$game -record "$game.$name.inp" "$@" 2>/dev/null | awk '/^Average speed:/ {print substr($4,2)}'`"
 echo "Recorded ${seconds:="0"} seconds of input."

@@ -7,7 +7,7 @@ MAME root directory: $mameroot" 1>&2
 fi
 game="$1"
 shift
-nv="$mameroot/nvram/$game.nv"
+nv="$mameroot/nvram/$game"
 inp="$mameroot/inp/$game"
 snap="$mameroot/snap"
 meta="$mameroot/meta.$game"
@@ -16,9 +16,9 @@ if [ $# = 0 ]; then
     echo 'Choose an input file to delete:'
     ls
     read -ep '> ' name
-    [ "$name" ] && rm -v "$inp.$name.inp" "$nv.$name" "$meta/$name"
+    [ "$name" ] && rm -v -r "$inp.$name.inp" "$nv.$name" "$meta/$name"
 else
     for name in "$@"; do
-        rm -v "$inp.$name.inp" "$nv.$name" "$meta/$name"
+        rm -v -r "$inp.$name.inp" "$nv.$name" "$meta/$name"
     done
 fi

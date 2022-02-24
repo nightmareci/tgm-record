@@ -7,13 +7,13 @@ MAME root directory: $mameroot" 1>&2
 fi
 game="$1"
 shift
-launcher="`which tgm-launcher`"
+launcher="`which tgm-launcher 2>/dev/null`"
 [ -f "${launcher:="`dirname "$0"`/tgm-launcher"}" ] \
     || launcher="`dirname "\`readlink -f "$0"\`"`/tgm-launcher"
 [ ! -f "$launcher" ] && echo 'Unable to find tgm-launcher helper script.' 1>&2 \
     || . "$launcher"
 
-nv="$mameroot/nvram/$game.nv"
+nv="$mameroot/nvram/$game"
 inp="$mameroot/inp/$game"
 snap="$mameroot/snap"
 meta="$mameroot/meta.$game"
@@ -26,13 +26,13 @@ else
     name="$1"
 fi
 inpfile="$inp.$name.inp"
-nvfile="$nv.$name"
+nvdir="$nv.$name"
 metafile="$meta/$name"
 if [ ! -f "$inpfile" ]; then
     echo 'Input file not found.'
     exit 1
 fi
-if [ ! -f "$nvfile" ]; then
+if [ ! -d "$nvdir" ]; then
     echo 'Matching NVRAM not found. Playback is not possible.'
     exit 1
 fi
@@ -49,11 +49,11 @@ else
         seconds="-seconds_to_run $((seconds+1))"
     fi
 fi
-cp "$nvfile" "$snap/$game.nv"
+cp -r "$nvdir" "$snap/$game"
 echo -n 'Current directory: '
 cd -
 out=''
-read -ep 'Give an output filename if you want to encode: ' -i "$game.$name.mkv" out
+read -ep 'Give an output filename if you want to encode: ' -i "$game.$name.mp4" out
 while [ "$out"x != x -a -e "$out" ]; do
     read -ep "'$out' already exists. Confirm the filename: " -i "$out" out2
     [ "$out2" = "$out" ] && rm -f "$out" && break
@@ -72,8 +72,8 @@ if [ "$out" ]; then
     echo "Encoding '$name' to '$out'"
     avi="$out.avi"
     avifile="$snap/$avi"
-    trap "rm -f '$avifile' '$snap/$game.nv'" SIGINT
-    $game $seconds -mt -nothrottle -nosleep -window -resolution 320x240 -nvram_directory 'snap' -playback "$game.$name.inp" -aviwrite "$avi" 2>/dev/null
+    trap "rm -f -r '$avifile' '$snap/$game'" SIGINT
+    $game $seconds -nothrottle -nosleep -window -resolution 320x240 -nvram_directory "$snap" -playback "$game.$name.inp" -aviwrite "$avi"
 
     st=0
     if [ "$ac" ] && [ "$ac" = 1 -o "$ac" = 2 ]; then
@@ -86,10 +86,10 @@ if [ "$out" ]; then
         echo "Starting encode $st seconds in"
     fi
 
-    ffmpeg -i "$avifile" -ss $st -acodec libfaac -ab 96k -vcodec libx264 -vpre normal -crf 20 -threads 0 "$out"
+    ffmpeg -i "$avifile" -ss $st -acodec aac -ab 96k -vcodec libx264 -crf 20 -threads 0 "$out"
     success=$?
 
-    rm -f "$avifile" "$snap/$game.nv"
+    rm -f -r "$avifile" "$snap/$game"
     if [ $success = 0 ]; then
         echo "Done encoding '$out'."
     else
@@ -97,7 +97,7 @@ if [ "$out" ]; then
         exit $success
     fi
 else
-    $game $seconds -nvram_directory 'snap' -playback "$game.$name.inp" 2>/dev/null
-    rm "$snap/$game.nv"
+    $game $seconds -nvram_directory "$snap" -playback "$game.$name.inp" 2>/dev/null
+    rm -r "$snap/$game"
 fi
 

@@ -4,7 +4,6 @@ TGM2P sessions.
 Prerequisites:
    - A version of MAME that takes single-dash parameters.
      Or you can modify the script to use double-dash parameters.
-     Recommended: shmupmame with TGM patches.
    - zenity for displaying the tag dialog in tgm-record if there is no terminal.
      Or you can just always run it in a terminal.
    - ffmpeg with libx264 support enabled for encoding.
