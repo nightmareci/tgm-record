@@ -53,9 +53,10 @@ cp -r "$nvdir" "$snap/$game"
 echo -n 'Current directory: '
 cd -
 out=''
-read -ep 'Give an output filename if you want to encode: ' -i "$game.$name.mp4" out
+read -ep 'Give an output filename if you want to encode: ' out
 while [ "$out"x != x -a -e "$out" ]; do
-    read -ep "'$out' already exists. Confirm the filename: " -i "$out" out2
+    read -ep "'$out' already exists. Confirm the filename: " out2
+    [ -z "$out2" ] && out2="$out"
     [ "$out2" = "$out" ] && rm -f "$out" && break
     out="$out2"
 done
